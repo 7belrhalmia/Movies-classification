@@ -1,0 +1,212 @@
+
+# -*- coding: utf-8
+import io
+import nltk
+import os
+import scipy
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import  TfidfVectorizer
+from nltk.tokenize import sent_tokenize, word_tokenize
+import sklearn.svm
+from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_score
+
+
+
+actionsList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Action/")
+adventureList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Adventure/")
+comedyList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Comedy/")
+crimeList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Crime/")
+romanceList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Romance/")
+musicalList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Musical/")
+warList=os.listdir("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/War/")
+
+
+directory=("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/")
+
+
+def tokenize(string):
+    return(nltk.tokenize.word_tokenize(string))
+
+
+
+
+
+
+def loadFile(filePath):
+    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/"+filePath)
+    f=f.read() 
+    return (f)
+
+def populateKonwledgeBase(category,subPath,subList,trainingRate=0.8):
+    docsList=list()
+    testList=list()
+    testTags=list()
+    tags=list()
+    bound=range(0,int(trainingRate*len(subList)))
+    for i in bound:
+        f=io.open(directory+category+os.path.sep+subList[i],encoding='utf8',errors='replace')
+        strFile=f.read()
+        f.close();
+        docsList.append(strFile)
+        tags.append(category)
+    testBound=range(int(0.8*len(subList))+1,len(subList))
+    for i in testBound:
+        f=io.open(directory+category+os.path.sep+subList[i],encoding='utf8',errors='replace')
+        strFile=f.read()
+        f.close();
+        testList.append(strFile)
+        testTags.append(category)
+    return( docsList,testList,tags,testTags)
+
+docsList=list()
+testData=list()
+testTags=list()
+docTags=list()
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Action",directory,actionsList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Musical",directory,musicalList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Adventure",directory,adventureList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Comedy",directory,comedyList)
+docsList.extend(docsClass)
+docTags.extend(tags)
+testData.extend(annex)
+testTags.extend(annexTags)
+
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Crime",directory,crimeList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("Romance",directory,romanceList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+docsClass,annex,tags,annexTags=populateKonwledgeBase("War",directory,warList)
+docsList.extend(docsClass)
+testData.extend(annex)
+testTags.extend(annexTags)
+docTags.extend(tags)
+
+docTags.extend(testTags)
+docsList.extend(testData)
+
+
+
+
+trainingTags=docTags[0:len(docTags)-len(testTags)]
+
+#
+#actionDoc=list()
+#docsList=list()
+#
+#tags=list()
+#for i,f in enumerate(actionsList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Action/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()   
+##    tokens = tokenize(f)
+#    actionDoc.append(f1)
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Action")
+##    if i>200:
+##        break;
+#musicDoc=list()
+#for i,f in enumerate(musicalList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Musical/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    musicDoc.append(f1)
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Musical")
+##    if i>200:
+##        break;
+#
+#for i,f in enumerate(comedyList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Comedy/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Comdey")
+#    
+#for i,f in enumerate(warList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/War/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("War")
+#
+#for i,f in enumerate(crimeList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Crime/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Crime")
+#
+#for i,f in enumerate(romanceList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Romance/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Romance")
+#
+#for i,f in enumerate(adventureList):
+#    f=io.open("C:/Users/Mohamed Ali/Desktop/9raya/Paris Sud/TAL/Projet/Clean Data/Adventure/"+f,encoding='utf8',errors='replace')
+#    f1=f.read()
+#    docsList.append(f1)
+#    f.close()
+#    tags.append("Adventure")
+#
+#
+#    
+
+try:
+    vectorizer = TfidfVectorizer( stop_words='english')
+    tfidfscores=vectorizer.fit_transform(docsList)
+except:
+    pass
+
+
+trainingMatrix=tfidfscores[0:len(docTags)-len(testTags)]
+trainingTags=docTags[0:len(docTags)-len(testTags)]
+testMatrix=tfidfscores[len(docTags)-len(testTags):]
+
+#
+#clf = MultinomialNB().fit(tfidfscores[0:350], tags[0:350])
+#clf.predict(tfidfscores[51:])
+#
+#clfSVM=sklearn.svm.LinearSVC().fit(trainingMatrix,trainingTags)
+
+
+clsSVM=sklearn.svm.SVC().fit(trainingMatrix,trainingTags)
+
+labelsResults=clfSVM.predict(testMatrix)
+
+results=[True if testTags[i]==labelsResults[i] else False for i in range(0,len(testTags))]
+
+
+print(classification_report(testTags,labelsResults,labels=['Action','Musical','Adventure','Comedy','Crime','Romance','War'],target_names=['Action','Musical','Adventure','Comedy','Crime','Romance','War']))
+
+#clf = sklearn.svm.SVC(kernel='linear', C=1)
+#scores = cross_val_score(clf, tfidfscores,docTags, cv=10)
