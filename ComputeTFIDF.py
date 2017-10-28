@@ -103,7 +103,6 @@ def populateKonwledgeBaseRDN(category,directory,subList,trainingRate=0.8):
     testTags=list()
     tags=list()
     for i,item in enumerate(subList):
-        
         f=io.open(directory+category+os.path.sep+subList[i],encoding='utf8',errors='replace')
         strFile=f.read()
         f.close();
@@ -197,7 +196,7 @@ def getData(directory=directory):
     vectorizer2 = TfidfVectorizer( stop_words='english',vocabulary=vocab)
     testMatrix=vectorizer2.fit_transform(testData)
     
-    return trainingMatrix,trainingTags,testMatrix,testTags
+    return trainingMatrix,trainingTags,testMatrix,testTags,docsList,testData
 
 actionList,adventureList,comedyList,crimeList,romanceList,musicalList,warList,westernList=cleanTheLists(listMovies)
 
@@ -217,7 +216,7 @@ westernList2=os.listdir(stemmedDataPath+"/Western/")
 
 #trainingMatrix,trainingTags,testMatrix,testTags=getData(directory)
 
-trainingMatrixStem,trainingTagsStem,testMatrixStem,testTagsStem=getData(stemmedDataPath)
+trainingMatrixStem,trainingTagsStem,testMatrixStem,testTagsStem,trainingDocs,testDocs=getData(stemmedDataPath)
 scipy.sparse.save_npz("TrainingMatrixStemm.npz",trainingMatrixStem)
 scipy.sparse.save_npz("TestMatrixStemm.npz",testMatrixStem)
 
